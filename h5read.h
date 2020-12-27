@@ -92,7 +92,8 @@ class H5File
   octave_value read_dset ();
   Matrix get_auto_chunksize (const Matrix& size, int typesize);
 
-  template <typename T> hsize_t* alloc_hsize (const T& dim, const int mode, const bool reverse);
+  hsize_t* alloc_hsize (const Matrix& dim, const int mode, const bool reverse);
+  hsize_t* alloc_hsize (const dim_vector& dim, const int mode, const bool reverse);
 
 };
 

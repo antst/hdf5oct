@@ -660,12 +660,31 @@ H5File::~H5File ()
     }
 }
 
-// T will be Matrix or dim_vector
-template <typename T>
 hsize_t*
-H5File::alloc_hsize (const T& dim, const int mode, const bool reverse)
+H5File::alloc_hsize (const Matrix& dim, const int mode, const bool reverse)
 {
   int rank = dim.numel ();
+  hsize_t *hsize = (hsize_t*)malloc (rank * sizeof (hsize_t));
+  for (int i = 0; i < rank; i++)
+    {
+      int j = reverse ? rank-i-1 : i;
+      if (mode == ALLOC_HSIZE_INFZERO_TO_UNLIMITED && (dim(i) == octave_Inf || dim(i) == 0))
+        hsize[j] = H5S_UNLIMITED;
+      else if (mode == ALLOC_HSIZE_INF_TO_ZERO && dim(i) == octave_Inf)
+        hsize[j] = 0;
+      else
+        hsize[j] = dim(i);
+    }
+  return hsize;
+}
+
+hsize_t*
+H5File::alloc_hsize (const dim_vector& dim, const int mode, const bool reverse)
+{
+  // attention:
+  // dim.numel () gives the number of entries that a matrix with this dimension
+  //  vector would have
+  int rank = dim.ndims ();
   hsize_t *hsize = (hsize_t*)malloc (rank * sizeof (hsize_t));
   for (int i = 0; i < rank; i++)
     {
@@ -988,7 +1007,8 @@ void
 H5File::write_dset (const char *dsetname,
                     const octave_value ov_data)
 {
-  int rank = ov_data.dims ().numel ();
+  // the rank of the dataspace is the number of dimensions
+  int rank = ov_data.dims ().ndims ();
 
   hsize_t *dims = alloc_hsize (ov_data.dims(), ALLOC_HSIZE_DEFAULT, true);
   dspace_id = H5Screate_simple (rank, dims, NULL);
