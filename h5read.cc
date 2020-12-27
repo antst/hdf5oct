@@ -38,7 +38,6 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include "gripes.h"
 #include "file-stat.h"
 
 using namespace std;
@@ -599,7 +598,7 @@ H5File::H5File (const char *filename, const bool create_if_nonexisting,
   //suppress hdf5 error output
   H5Eset_auto (H5E_DEFAULT,0,0);
 
-  file_stat fs (filename);
+  octave::sys::file_stat fs (filename);
   if (! fs.exists () && create_if_nonexisting)
     file = H5Fcreate (filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   else if (! fs.exists () && ! create_if_nonexisting)
